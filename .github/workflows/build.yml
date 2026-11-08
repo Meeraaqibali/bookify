@@ -30,16 +30,22 @@ jobs:
     - name: Generate Native Android Folder
       run: npx expo prebuild --platform android
 
+    - name: Increase Gradle Memory
+      run: |
+        echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> android/gradle.properties
+
     - name: Build Android APK
       run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleRelease
+        # Building Debug instead of Release to avoid Keystore issues
+        ./gradlew assembleDebug
       env:
-        GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+        GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -Dorg.gradle.daemon=false"
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Bookify-Release-APK
-        path: android/app/build/outputs/apk/release/app-release.apk
+        name: Bookify-APK
+        # Path changed to the debug folder
+        path: android/app/build/outputs/apk/debug/app-debug.apk

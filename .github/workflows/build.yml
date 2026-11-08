@@ -30,15 +30,6 @@ jobs:
     - name: Generate Native Android Folder
       run: npx expo prebuild --platform android --clean
 
-    - name: Fix Expo SDK 58 Inline Modules Bug
-      run: |
-        # This forces the buggy property to an empty array, preventing the JSON parse crash
-        echo "expo.inlineModules.watchedDirectories=[]" >> android/gradle.properties
-
-    - name: Increase Gradle Memory
-      run: |
-        echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> android/gradle.properties
-
     - name: Build Android APK
       run: |
         cd android

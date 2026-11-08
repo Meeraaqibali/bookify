@@ -1,12 +1,29 @@
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, ScrollView, Pressable, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect, router } from 'expo-router';
+import { Image } from 'expo-image';
 import { useTheme } from '@/context/ThemeContext';
+import { getDownloads, removeDownload, DownloadedBook } from '@/lib/downloads';
 import { space, radius } from '@/constants/theme';
 
 export default function Library() {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const [downloads, setDownloads] = useState<DownloadedBook[]>([]);
+
+  // Reload the library every time you open the tab
+  useFocusEffect(
+    useCallback(() => {
+      getDownloads().then(setDownloads);
+    }, [])
+  );
+
+  const handleDelete = async (key: string, uri: string) => {
+    await removeDownload(key, uri);
+    setDownloads(downloads.filter(b => b.key !== key));
+  };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ paddingTop: insets.top + space.lg, paddingBottom: 100 }}>
@@ -15,37 +32,47 @@ export default function Library() {
         <Pressable><Ionicons name="add" size={28} color={colors.text} /></Pressable>
       </View>
 
-      {/* Filter Pills */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: space.md, gap: space.sm, marginTop: space.lg }}>
-        {['Playlists', 'Books', 'Authors', 'Downloaded', 'Albums'].map((filter, i) => (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: space.md, gap: space.sm, marginTop: space.lg, marginBottom: space.lg }}>
+        {['Downloaded', 'Playlists', 'Authors', 'Albums'].map((filter, i) => (
           <View key={filter} style={{ backgroundColor: i === 0 ? colors.accent : colors.card, paddingHorizontal: space.md, paddingVertical: 6, borderRadius: 20 }}>
             <Text style={{ color: i === 0 ? colors.bg : colors.text, fontWeight: '600', fontSize: 13 }}>{filter}</Text>
           </View>
         ))}
       </ScrollView>
 
-      {/* Liked Books */}
-      <Pressable style={{ flexDirection: 'row', alignItems: 'center', padding: space.md, marginTop: space.md }}>
-        <View style={{ width: 60, height: 60, borderRadius: radius.md, backgroundColor: '#4A148C', alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="heart" size={30} color="#FFF" />
-        </View>
-        <View style={{ marginLeft: space.md }}>
-          <Text style={{ color: colors.text, fontSize: 16, fontWeight: '700' }}>Liked Books</Text>
-          <Text style={{ color: colors.textDim, fontSize: 13, marginTop: 2 }}>Playlist • 12 books</Text>
-        </View>
-      </Pressable>
+      <Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', paddingHorizontal: space.md, marginBottom: space.md }}>Downloaded Books</Text>
 
-      {/* Recently Read */}
-      <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700', paddingHorizontal: space.md, marginTop: space.lg, marginBottom: space.sm }}>Recently Read</Text>
-      {[1, 2, 3].map((i) => (
-        <Pressable key={i} style={{ flexDirection: 'row', alignItems: 'center', padding: space.md }}>
-          <View style={{ width: 50, height: 75, borderRadius: radius.sm, backgroundColor: colors.card }} />
-          <View style={{ marginLeft: space.md }}>
-            <Text style={{ color: colors.text, fontSize: 15, fontWeight: '600' }}>Placeholder Book {i}</Text>
-            <Text style={{ color: colors.textDim, fontSize: 13, marginTop: 2 }}>Author Name</Text>
-          </View>
-        </Pressable>
-      ))}
+      {downloads.length === 0 ? (
+        <View style={{ alignItems: 'center', marginTop: 50 }}>
+          <Ionicons name="download-outline" size={60} color={colors.card} />
+          <Text style={{ color: colors.textDim, marginTop: space.md }}>No downloads yet.</Text>
+          <Text style={{ color: colors.textFaint, fontSize: 12, marginTop: 4 }}>Download a classic book to read offline.</Text>
+        </View>
+      ) : (
+        downloads.map((book) => (
+          <Pressable 
+            key={book.key} 
+            onPress={() => router.push({ pathname: '/book/reader', params: { title: book.title, textUrl: book.localUri } })}
+            style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.md, paddingVertical: space.sm }}
+          >
+            {book.coverUrl ? (
+               <Image source={{ uri: book.coverUrl }} style={{ width: 60, height: 90, borderRadius: radius.sm, backgroundColor: colors.card }} />
+            ) : (
+               <View style={{ width: 60, height: 90, borderRadius: radius.sm, backgroundColor: colors.card }} />
+            )}
+            
+            <View style={{ flex: 1, marginLeft: space.md }}>
+              <Text numberOfLines={2} style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>{book.title}</Text>
+              <Text numberOfLines={1} style={{ color: colors.textDim, fontSize: 13, marginTop: 4 }}>{book.author}</Text>
+              <Text style={{ color: colors.accent, fontSize: 11, marginTop: 4, fontWeight: '600' }}>READ OFFLINE</Text>
+            </View>
+
+            <Pressable onPress={() => handleDelete(book.key, book.localUri)} style={{ padding: space.sm }}>
+              <Ionicons name="trash-outline" size={20} color={colors.textDim} />
+            </Pressable>
+          </Pressable>
+        ))
+      )}
     </ScrollView>
   );
 }

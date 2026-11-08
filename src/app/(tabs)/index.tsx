@@ -60,7 +60,7 @@ export default function Home() {
   }, []);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: 120 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: 150 }}>
       
       <Text style={{ color: colors.text, fontSize: 28, fontWeight: '800', paddingHorizontal: space.md, letterSpacing: -0.5 }}>
         {greeting}

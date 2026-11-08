@@ -28,7 +28,8 @@
     },
     "plugins": [
       "expo-router",
-      "./plugins/withDisableInlineModules"
+      "./plugins/withDisableInlineModules",
+      "./plugins/embed-js-in-debug"
     ]
   }
 }

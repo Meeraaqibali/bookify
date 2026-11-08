@@ -28,6 +28,11 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "experiments": {
+      "inlineModules": {
+        "watchedDirectories": []
+      }
+    }
   }
 }

@@ -43,5 +43,10 @@
     "web": "expo start --web",
     "lint": "expo lint"
   },
-  "private": true
+  "private": true,
+  "resolutions": {
+    "expo-modules-autolinking": "58.0.15",
+    "@expo/config-plugins": "58.0.11",
+    "@expo/prebuild-config": "58.0.9"
+  }
 }

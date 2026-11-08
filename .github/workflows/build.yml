@@ -28,7 +28,12 @@ jobs:
       run: npm install
 
     - name: Generate Native Android Folder
-      run: npx expo prebuild --platform android
+      run: npx expo prebuild --platform android --clean
+
+    - name: Fix Expo SDK 58 Inline Modules Bug
+      run: |
+        # This forces the buggy property to an empty array, preventing the JSON parse crash
+        echo "expo.inlineModules.watchedDirectories=[]" >> android/gradle.properties
 
     - name: Increase Gradle Memory
       run: |
@@ -38,7 +43,6 @@ jobs:
       run: |
         cd android
         chmod +x gradlew
-        # Building Debug instead of Release to avoid Keystore issues
         ./gradlew assembleDebug
       env:
         GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -Dorg.gradle.daemon=false"
@@ -47,5 +51,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Bookify-APK
-        # Path changed to the debug folder
         path: android/app/build/outputs/apk/debug/app-debug.apk

@@ -26,7 +26,7 @@ export default function Library() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ paddingTop: insets.top + space.lg, paddingBottom: 150 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ paddingTop: insets.top + space.lg, paddingBottom: space.xl }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.md }}>
         <Text style={{ color: colors.text, fontSize: 28, fontWeight: '800' }}>Your Library</Text>
         <Pressable><Ionicons name="add" size={28} color={colors.text} /></Pressable>

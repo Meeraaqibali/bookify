@@ -45,6 +45,7 @@ export default function Search() {
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top + space.lg }}>
       <Text style={{ color: colors.text, fontSize: 28, fontWeight: '800', paddingHorizontal: space.md }}>Search</Text>
       
+      {/* Search Bar */}
       <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, marginHorizontal: space.md, marginTop: space.md, marginBottom: space.lg, borderRadius: radius.md, paddingHorizontal: space.sm, height: 48 }}>
         <Ionicons name="search" size={20} color={colors.textDim} />
         <TextInput style={{ flex: 1, color: colors.text, fontSize: 16, marginLeft: space.sm }} placeholder="What do you want to read?" placeholderTextColor={colors.textFaint} value={query} onChangeText={handleSearch} />
@@ -58,7 +59,7 @@ export default function Search() {
           data={results}
           keyExtractor={(item) => item.key}
           numColumns={3}
-          contentContainerStyle={{ paddingHorizontal: space.md, paddingBottom: 150 }} // paddingBottom ensures it scrolls above the tab bar
+          contentContainerStyle={{ paddingHorizontal: space.md, paddingBottom: space.xl }} // Reduced padding
           columnWrapperStyle={{ gap: space.sm, marginBottom: space.lg }}
           renderItem={({ item }) => <BookCard book={{ ...item, cover_id: item.cover_i, authors: [{ name: item.author_name?.[0] }] }} />}
           ListEmptyComponent={<Text style={{ color: colors.textDim, textAlign: 'center', marginTop: 40 }}>No books found.</Text>}
@@ -68,7 +69,7 @@ export default function Search() {
           key="browse-grid"
           data={ALL_CATEGORIES}
           numColumns={2}
-          contentContainerStyle={{ paddingHorizontal: space.sm, paddingBottom: 150 }} // paddingBottom ensures it scrolls above the tab bar
+          contentContainerStyle={{ paddingHorizontal: space.sm, paddingBottom: space.xl }} // Reduced padding
           columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: space.sm }}
           ListHeaderComponent={<Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', paddingHorizontal: space.sm, marginBottom: space.md }}>Browse all</Text>}
           keyExtractor={(item) => item.slug}

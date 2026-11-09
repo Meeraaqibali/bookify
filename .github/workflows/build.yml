@@ -30,17 +30,18 @@ jobs:
     - name: Generate Native Android Folder
       run: npx expo prebuild --platform android --clean
 
-    - name: Build Android APK
+    - name: Build Android Release APK
       run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleDebug
+        # Building Release instead of Debug
+        ./gradlew assembleRelease
       env:
         GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -Dorg.gradle.daemon=false"
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Bookify-APK
-        # This now looks for ALL apks in the debug folder instead of just app-debug.apk
-        path: android/app/build/outputs/apk/debug/*.apk
+        name: Bookify-Final-APK
+        # Path points to the release folder
+        path: android/app/build/outputs/apk/release/app-release.apk

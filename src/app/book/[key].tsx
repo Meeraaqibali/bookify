@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as WebBrowser from 'expo-web-browser';
 import { useTheme } from '@/context/ThemeContext';
 import { saveBookOffline, getDownloads } from '@/lib/downloads';
 import { space, radius } from '@/constants/theme';
@@ -43,32 +44,54 @@ export default function BookDetails() {
 
     async function fetchTextUrl() {
       try {
-        // 30 second timeout to give Gutenberg plenty of time
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 sec timeout
         
-        // Clean the title: remove punctuation, take first 4 words
-        const cleanTitle = String(title).replace(/[^\w\s]/gi, '').trim();
+        // Clean the title: remove punctuation and parentheses, keep the full title
+        const cleanTitle = String(title).replace(/[^\w\s]/gi, ' ').replace(/\s+/g, ' ').trim();
         const query = encodeURIComponent(cleanTitle);
         
         const gutendex = await fetch(`https://gutendex.com/books?search=${query}`, { signal: controller.signal });
         clearTimeout(timeoutId);
         const json = await gutendex.json();
         
+        let foundUrl = null;
+
         if (json.results && json.results.length > 0) {
-          // Loop through the results
+          // Loop through results and find one with a valid text format
           for (const result of json.results) {
              const formats = result.formats;
-             
-             // Find ANY key that contains 'text/plain' or 'text/html'
              const formatKey = Object.keys(formats).find(k => k.includes('text/plain') || k.includes('text/html'));
-             
              if (formatKey) {
-                 setTextUrl(formats[formatKey]);
-                 break; // Stop searching once we find a valid link
+                 foundUrl = formats[formatKey];
+                 break;
              }
           }
         }
+
+        // Fallback: If title search fails, search by author's last name
+        if (!foundUrl && author) {
+            const authorLastName = String(author).split(' ').pop();
+            const authorRes = await fetch(`https://gutendex.com/books?search=${encodeURIComponent(authorLastName || '')}`);
+            const authorJson = await authorRes.json();
+            
+            if (authorJson.results) {
+                for (const result of authorJson.results) {
+                    // Check if the title matches at least the first 5 characters
+                    if (result.title.toLowerCase().includes(cleanTitle.toLowerCase().substring(0, 5))) {
+                        const formats = result.formats;
+                        const formatKey = Object.keys(formats).find(k => k.includes('text/plain') || k.includes('text/html'));
+                        if (formatKey) {
+                            foundUrl = formats[formatKey];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (foundUrl) setTextUrl(foundUrl);
+
       } catch (e) { 
         console.log("Text search failed.", e); 
       }
@@ -83,7 +106,7 @@ export default function BookDetails() {
     if (textUrl) {
       router.push({ pathname: '/book/reader', params: { title, textUrl } });
     } else {
-      Alert.alert("Not Available", "This book is copyrighted or does not have a free text version.");
+      Alert.alert("Not Found", "Could not find the text in the database.");
     }
   };
 
@@ -98,6 +121,10 @@ export default function BookDetails() {
       Alert.alert("Error", "Failed to download. Try again.");
     }
     setDownloading(false);
+  };
+
+  const openGutenberg = () => {
+    WebBrowser.openBrowserAsync(`https://www.gutenberg.org/ebooks/search/?query=${encodeURIComponent(String(title))}`);
   };
 
   return (
@@ -136,9 +163,12 @@ export default function BookDetails() {
 
       {!searchingBook && !textUrl && (
         <View style={{ marginHorizontal: space.lg, marginTop: space.md, padding: space.md, backgroundColor: 'rgba(229, 72, 77, 0.1)', borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(229, 72, 77, 0.3)' }}>
-          <Text style={{ color: '#E5484D', fontSize: 13, textAlign: 'center', fontWeight: '600' }}>
-            This book is copyrighted or does not have a free text version.
+          <Text style={{ color: '#E5484D', fontSize: 13, textAlign: 'center', fontWeight: '600', marginBottom: space.sm }}>
+            This book's text is not available in the app's free database.
           </Text>
+          <Pressable onPress={openGutenberg} style={{ backgroundColor: '#E5484D', paddingVertical: 8, borderRadius: radius.sm, alignItems: 'center' }}>
+            <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 13 }}>Read on Gutenberg Website</Text>
+          </Pressable>
         </View>
       )}
 

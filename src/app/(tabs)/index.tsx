@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text, View, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { Text, View, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
 import MixCard from '@/components/MixCard';
@@ -8,7 +8,6 @@ import { SkeletonBookCard, SkeletonRow } from '@/components/Skeleton';
 import { space, radius } from '@/constants/theme';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 
 const MIXES = [
   { title: 'Sci-Fi Classics', subtitle: 'Dystopian futures', slug: 'science_fiction', imageUrl: 'https://covers.openlibrary.org/b/id/12695562-L.jpg' },
@@ -60,13 +59,17 @@ export default function Home() {
   }, []);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: 150 }}>
-      
+    <ScrollView 
+      style={{ flex: 1, backgroundColor: colors.bg }} 
+      contentContainerStyle={{ 
+        paddingTop: insets.top + space.md,
+        paddingBottom: space.xl // <--- FIXED: Changed from 120 to space.xl (32px)
+      }}
+    >
       <Text style={{ color: colors.text, fontSize: 28, fontWeight: '800', paddingHorizontal: space.md, letterSpacing: -0.5 }}>
         {greeting}
       </Text>
 
-      {/* Jump Back In Grid */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: space.sm, marginTop: space.lg, justifyContent: 'space-between' }}>
         {MIXES.map((mix, i) => (
           <Pressable key={i} onPress={() => router.push({ pathname: '/category/[slug]', params: { slug: mix.slug, title: mix.title } })} style={{ width: '48%', flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderRadius: radius.sm, marginBottom: space.sm, overflow: 'hidden' }}>
@@ -76,7 +79,6 @@ export default function Home() {
         ))}
       </View>
 
-      {/* Made for You */}
       <View style={{ marginTop: space.xl }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.md, marginBottom: space.md }}>
           <Text style={{ color: colors.text, fontSize: 22, fontWeight: '700', letterSpacing: -0.5 }}>Made for you</Text>
@@ -86,7 +88,6 @@ export default function Home() {
         </ScrollView>
       </View>
 
-      {/* Top Authors */}
       <View style={{ marginTop: space.xl }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.md, marginBottom: space.md }}>
           <Text style={{ color: colors.text, fontSize: 22, fontWeight: '700', letterSpacing: -0.5 }}>Top Authors</Text>
@@ -101,7 +102,6 @@ export default function Home() {
         </ScrollView>
       </View>
 
-      {/* Trending Books */}
       <View style={{ marginTop: space.xl }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.md, marginBottom: space.sm }}>
           <Text style={{ color: colors.text, fontSize: 22, fontWeight: '700', letterSpacing: -0.5 }}>Trending Books</Text>
@@ -109,7 +109,6 @@ export default function Home() {
         {loading ? <><SkeletonRow /><SkeletonRow /></> : trending.map((book, index) => <BookListRow key={book.key} book={book} index={index} />)}
       </View>
 
-      {/* Category Carousels */}
       {CATEGORIES.map((cat) => (
         <View key={cat.slug} style={{ marginTop: space.xl }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.md, marginBottom: space.md }}>

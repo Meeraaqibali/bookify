@@ -3,20 +3,20 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
+import * as NavigationBar from 'expo-navigation-bar';
 import { ThemeProvider } from '@/context/ThemeContext';
 import ExitDialog from '@/components/ExitDialog';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
 import { useExitOnBack } from '@/hooks/useExitOnBack';
 import { colors } from '@/constants/theme';
 
-// Keep the native splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
   const { exitVisible, cancelExit, confirmExit } = useExitOnBack();
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="light" translucent backgroundColor="transparent" />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -35,10 +35,11 @@ export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Hide the native splash screen immediately so our custom animation shows
-        await SplashScreen.hideAsync();
+        // Fix the Android bottom navigation bar color
+        await NavigationBar.setBackgroundColorAsync(colors.bg);
+        await NavigationBar.setButtonStyleAsync('light');
         
-        // Simulate loading time (e.g., fetching user data, fonts, etc.)
+        await SplashScreen.hideAsync();
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (e) {
         console.warn(e);
@@ -49,12 +50,10 @@ export default function RootLayout() {
     prepare();
   }, []);
 
-  // Show the custom animated loading screen
   if (!isAppReady) {
     return <AppLoadingScreen />;
   }
 
-  // Show the actual app
   return (
     <SafeAreaProvider>
       <ThemeProvider>

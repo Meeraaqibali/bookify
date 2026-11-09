@@ -29,8 +29,7 @@
     "plugins": [
       "expo-router",
       "./plugins/withDisableInlineModules",
-      "./plugins/embed-js-in-debug",
-      "./plugins/withAbiSplits"
+      "expo-web-browser"
     ]
   }
 }

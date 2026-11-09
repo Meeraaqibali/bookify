@@ -43,27 +43,28 @@ export default function BookDetails() {
 
     async function fetchTextUrl() {
       try {
-        // Increased timeout to 20 seconds because Gutendex can be slow
+        // 30 second timeout to give Gutenberg plenty of time
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
         
-        // Take only the first 3 words of the title to guarantee a match on Gutenberg
-        const titleWords = String(title).split(' ').slice(0, 3).join(' ');
-        const query = encodeURIComponent(titleWords);
+        // Clean the title: remove punctuation, take first 4 words
+        const cleanTitle = String(title).replace(/[^\w\s]/gi, '').trim();
+        const query = encodeURIComponent(cleanTitle);
         
         const gutendex = await fetch(`https://gutendex.com/books?search=${query}`, { signal: controller.signal });
         clearTimeout(timeoutId);
         const json = await gutendex.json();
         
         if (json.results && json.results.length > 0) {
-          // Find the first result that has a readable text format
+          // Loop through the results
           for (const result of json.results) {
              const formats = result.formats;
-             const fileUrl = formats['text/plain; charset=utf-8'] || 
-                             formats['text/plain'] || 
-                             formats['text/html'];
-             if (fileUrl) {
-                 setTextUrl(fileUrl);
+             
+             // Find ANY key that contains 'text/plain' or 'text/html'
+             const formatKey = Object.keys(formats).find(k => k.includes('text/plain') || k.includes('text/html'));
+             
+             if (formatKey) {
+                 setTextUrl(formats[formatKey]);
                  break; // Stop searching once we find a valid link
              }
           }

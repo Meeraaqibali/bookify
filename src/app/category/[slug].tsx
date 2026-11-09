@@ -17,9 +17,9 @@ export default function CategoryScreen() {
   useEffect(() => {
     async function fetchCategory() {
       try {
-        const res = await fetch(`https://openlibrary.org/subjects/${slug}.json?limit=50`);
+        const res = await fetch(`https://gutendex.com/books?topic=${encodeURIComponent(slug as string)}&sort=popular`);
         const json = await res.json();
-        setBooks((json.works || []).filter((w: any) => w.cover_id));
+        setBooks(json.results || []);
       } catch (e) { console.error(e); }
       setLoading(false);
     }
@@ -40,7 +40,7 @@ export default function CategoryScreen() {
       ) : (
         <FlatList
           data={books}
-          keyExtractor={(item) => item.key}
+          keyExtractor={(item) => item.id.toString()}
           numColumns={3}
           contentContainerStyle={{ paddingHorizontal: space.md, paddingBottom: 100 }}
           columnWrapperStyle={{ gap: space.sm, marginBottom: space.md }}

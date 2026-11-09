@@ -22,14 +22,22 @@
         "backgroundColor": "#121212"
       }
     },
+    "androidStatusBar": {
+      "backgroundColor": "#00000000",
+      "translucent": true,
+      "barStyle": "light-content"
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#121212",
+      "barStyle": "light-content"
+    },
     "web": {
       "bundler": "metro",
       "output": "static"
     },
     "plugins": [
       "expo-router",
-      "./plugins/withDisableInlineModules",
-      "expo-web-browser"
+      "./plugins/withDisableInlineModules"
     ]
   }
 }

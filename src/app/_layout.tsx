@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import * as NavigationBar from 'expo-navigation-bar';
+import * as SystemUI from 'expo-system-ui';
 import { ThemeProvider } from '@/context/ThemeContext';
 import ExitDialog from '@/components/ExitDialog';
 import AppLoadingScreen from '@/components/AppLoadingScreen';
@@ -35,9 +37,12 @@ export default function RootLayout() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Fix the Android bottom navigation bar color
-        await NavigationBar.setBackgroundColorAsync(colors.bg);
-        await NavigationBar.setButtonStyleAsync('light');
+        if (Platform.OS === 'android') {
+          // Forces the native window background to dark
+          await SystemUI.setBackgroundColorAsync(colors.bg);
+          // Forces the navigation buttons to be white (light style) on the dark background
+          await NavigationBar.setButtonStyleAsync('light');
+        }
         
         await SplashScreen.hideAsync();
         await new Promise(resolve => setTimeout(resolve, 2000));

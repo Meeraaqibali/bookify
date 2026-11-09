@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, FlatList, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, TextInput, FlatList, ActivityIndicator, Pressable, StatusBar as RNStatusBar, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/context/ThemeContext';
@@ -8,14 +8,11 @@ import { space, radius } from '@/constants/theme';
 import { router } from 'expo-router';
 
 const ALL_CATEGORIES = [
-  { title: 'Psychology', slug: 'psychology' }, { title: 'Science Fiction', slug: 'science_fiction' },
-  { title: 'Economics', slug: 'economics' }, { title: 'Classic Literature', slug: 'classics' },
-  { title: 'Fantasy', slug: 'fantasy' }, { title: 'Mystery', slug: 'mystery_and_detective_stories' },
+  { title: 'Psychology', slug: 'psychology' }, { title: 'Science Fiction', slug: 'science fiction' },
+  { title: 'Economics', slug: 'economics' }, { title: 'Classic Literature', slug: 'literature' },
+  { title: 'Fantasy', slug: 'fantasy' }, { title: 'Mystery', slug: 'mystery' },
   { title: 'Romance', slug: 'romance' }, { title: 'History', slug: 'history' },
   { title: 'Philosophy', slug: 'philosophy' }, { title: 'Biography', slug: 'biography' },
-  { title: 'Science', slug: 'science' }, { title: 'Business', slug: 'business' },
-  { title: 'Poetry', slug: 'poetry' }, { title: 'Short Stories', slug: 'short_stories' },
-  { title: 'Horror', slug: 'horror' }, { title: 'Adventure', slug: 'adventure' },
 ];
 
 const GRID_COLORS = ['#E13300', '#1E3264', '#8D67AB', '#E8115B', '#148A08', '#503750', '#B06239', '#0D73EC'];
@@ -27,14 +24,16 @@ export default function Search() {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const topInset = Math.max(insets.top, Platform.OS === 'android' ? (RNStatusBar.currentHeight || 24) : 0);
+
   async function handleSearch(text: string) {
     setQuery(text);
     if (text.length < 3) { setResults([]); return; }
     setLoading(true);
     try {
-      const res = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(text)}&limit=30`);
+      const res = await fetch(`https://gutendex.com/books?search=${encodeURIComponent(text)}`);
       const json = await res.json();
-      setResults(json.docs || []);
+      setResults(json.results || []);
     } catch (e) { console.error(e); }
     setLoading(false);
   }
@@ -42,10 +41,9 @@ export default function Search() {
   const showResults = query.length >= 3;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top + space.lg }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: topInset + space.lg }}>
       <Text style={{ color: colors.text, fontSize: 28, fontWeight: '800', paddingHorizontal: space.md }}>Search</Text>
       
-      {/* Search Bar */}
       <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, marginHorizontal: space.md, marginTop: space.md, marginBottom: space.lg, borderRadius: radius.md, paddingHorizontal: space.sm, height: 48 }}>
         <Ionicons name="search" size={20} color={colors.textDim} />
         <TextInput style={{ flex: 1, color: colors.text, fontSize: 16, marginLeft: space.sm }} placeholder="What do you want to read?" placeholderTextColor={colors.textFaint} value={query} onChangeText={handleSearch} />
@@ -57,11 +55,11 @@ export default function Search() {
         <FlatList
           key="search-results"
           data={results}
-          keyExtractor={(item) => item.key}
+          keyExtractor={(item) => item.id.toString()}
           numColumns={3}
-          contentContainerStyle={{ paddingHorizontal: space.md, paddingBottom: space.xl }} // Reduced padding
+          contentContainerStyle={{ paddingHorizontal: space.md, paddingBottom: space.xl }}
           columnWrapperStyle={{ gap: space.sm, marginBottom: space.lg }}
-          renderItem={({ item }) => <BookCard book={{ ...item, cover_id: item.cover_i, authors: [{ name: item.author_name?.[0] }] }} />}
+          renderItem={({ item }) => <BookCard book={item} />}
           ListEmptyComponent={<Text style={{ color: colors.textDim, textAlign: 'center', marginTop: 40 }}>No books found.</Text>}
         />
       ) : (
@@ -69,7 +67,7 @@ export default function Search() {
           key="browse-grid"
           data={ALL_CATEGORIES}
           numColumns={2}
-          contentContainerStyle={{ paddingHorizontal: space.sm, paddingBottom: space.xl }} // Reduced padding
+          contentContainerStyle={{ paddingHorizontal: space.sm, paddingBottom: space.xl }}
           columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: space.sm }}
           ListHeaderComponent={<Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', paddingHorizontal: space.sm, marginBottom: space.md }}>Browse all</Text>}
           keyExtractor={(item) => item.slug}

@@ -17,19 +17,15 @@
       "supportsTablet": true
     },
     "android": {
+      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#121212"
+      },
+      "navigationBar": {
+        "backgroundColor": "#121212",
+        "barStyle": "light-content"
       }
-    },
-    "androidStatusBar": {
-      "backgroundColor": "#00000000",
-      "translucent": true,
-      "barStyle": "light-content"
-    },
-    "androidNavigationBar": {
-      "backgroundColor": "#121212",
-      "barStyle": "light-content"
     },
     "web": {
       "bundler": "metro",

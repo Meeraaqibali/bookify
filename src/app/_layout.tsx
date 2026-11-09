@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -17,8 +17,8 @@ SplashScreen.preventAutoHideAsync();
 function AppContent() {
   const { exitVisible, cancelExit, confirmExit } = useExitOnBack();
   return (
-    <>
-      <StatusBar style="light" translucent backgroundColor="transparent" />
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -27,7 +27,7 @@ function AppContent() {
         }}
       />
       <ExitDialog visible={exitVisible} onCancel={cancelExit} onConfirm={confirmExit} />
-    </>
+    </View>
   );
 }
 
@@ -38,10 +38,9 @@ export default function RootLayout() {
     async function prepare() {
       try {
         if (Platform.OS === 'android') {
-          // Forces the native window background to dark
-          await SystemUI.setBackgroundColorAsync(colors.bg);
-          // Forces the navigation buttons to be white (light style) on the dark background
+          // Force the system buttons to be white and the background to be dark
           await NavigationBar.setButtonStyleAsync('light');
+          await SystemUI.setBackgroundColorAsync(colors.bg);
         }
         
         await SplashScreen.hideAsync();

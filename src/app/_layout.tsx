@@ -38,9 +38,13 @@ export default function RootLayout() {
     async function prepare() {
       try {
         if (Platform.OS === 'android') {
-          // Force the system buttons to be white and the background to be dark
-          await NavigationBar.setButtonStyleAsync('light');
-          await SystemUI.setBackgroundColorAsync(colors.bg);
+          // Wrapped in try/catch so missing native modules don't crash the app on launch
+          try {
+            await SystemUI.setBackgroundColorAsync(colors.bg);
+            await NavigationBar.setButtonStyleAsync('light');
+          } catch (navError) {
+            console.warn("Navigation Bar setup failed:", navError);
+          }
         }
         
         await SplashScreen.hideAsync();

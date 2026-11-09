@@ -16,11 +16,11 @@ export default function TabsLayout() {
           tabBarActiveTintColor: colors.accent,
           tabBarInactiveTintColor: colors.textDim,
           tabBarStyle: {
-            backgroundColor: colors.bg, // Match the app theme exactly
-            borderTopColor: 'transparent', // Remove the ugly line
+            backgroundColor: colors.bg, 
+            borderTopColor: 'transparent', // Kill the white line
             borderTopWidth: 0,
-            height: 60 + insets.bottom,
-            paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+            height: 60 + (insets.bottom > 0 ? insets.bottom : 15),
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 15,
             paddingTop: 8,
             elevation: 0,
           },

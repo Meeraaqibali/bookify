@@ -1,1 +1,1 @@
-Triggering new build to apply the latest fixes.
+Fixing crash and native build dependencies.

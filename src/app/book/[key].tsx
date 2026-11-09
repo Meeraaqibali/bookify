@@ -21,7 +21,6 @@ export default function BookDetails() {
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
   const [searchingBook, setSearchingBook] = useState(true);
-  const [searchError, setSearchError] = useState(false);
 
   let coverUrl = cover && cover !== 'null' && cover !== '' ? `https://covers.openlibrary.org/b/id/${cover}-L.jpg` : null;
 
@@ -44,40 +43,33 @@ export default function BookDetails() {
 
     async function fetchTextUrl() {
       try {
+        // Increased timeout to 20 seconds because Gutendex can be slow
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
         
-        // Clean the title: just take the first part before a colon or parenthesis
-        const cleanTitle = title ? String(title).split(/[:(;]/)[0].trim() : '';
-        
-        // Search by Title ONLY. This is much more forgiving.
-        const query = encodeURIComponent(cleanTitle);
+        // Take only the first 3 words of the title to guarantee a match on Gutenberg
+        const titleWords = String(title).split(' ').slice(0, 3).join(' ');
+        const query = encodeURIComponent(titleWords);
         
         const gutendex = await fetch(`https://gutendex.com/books?search=${query}`, { signal: controller.signal });
         clearTimeout(timeoutId);
         const json = await gutendex.json();
         
         if (json.results && json.results.length > 0) {
-          // Try to find a match that shares the author's last name
-          const authorLastName = author ? String(author).split(' ').pop()?.toLowerCase() : '';
-          
-          let bestMatch = json.results[0];
-          if (authorLastName) {
-            const matchWithAuthor = json.results.find((r: any) => 
-              r.authors.some((a: any) => a.name.toLowerCase().includes(authorLastName))
-            );
-            if (matchWithAuthor) bestMatch = matchWithAuthor;
+          // Find the first result that has a readable text format
+          for (const result of json.results) {
+             const formats = result.formats;
+             const fileUrl = formats['text/plain; charset=utf-8'] || 
+                             formats['text/plain'] || 
+                             formats['text/html'];
+             if (fileUrl) {
+                 setTextUrl(fileUrl);
+                 break; // Stop searching once we find a valid link
+             }
           }
-
-          const formats = bestMatch.formats;
-          const fileUrl = formats['text/plain; charset=utf-8'] || 
-                          formats['text/plain'] || 
-                          formats['text/html'];
-          if (fileUrl) setTextUrl(fileUrl);
         }
       } catch (e) { 
-        console.log("Text search failed or timed out.", e); 
-        setSearchError(true);
+        console.log("Text search failed.", e); 
       }
       setSearchingBook(false);
     }
@@ -90,7 +82,7 @@ export default function BookDetails() {
     if (textUrl) {
       router.push({ pathname: '/book/reader', params: { title, textUrl } });
     } else {
-      Alert.alert("Not Found", "Could not find a free text file for this book on Project Gutenberg.");
+      Alert.alert("Not Available", "This book is copyrighted or does not have a free text version.");
     }
   };
 
@@ -144,7 +136,7 @@ export default function BookDetails() {
       {!searchingBook && !textUrl && (
         <View style={{ marginHorizontal: space.lg, marginTop: space.md, padding: space.md, backgroundColor: 'rgba(229, 72, 77, 0.1)', borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(229, 72, 77, 0.3)' }}>
           <Text style={{ color: '#E5484D', fontSize: 13, textAlign: 'center', fontWeight: '600' }}>
-            {searchError ? "Network error. Check your connection." : "Free text version not found on Project Gutenberg."}
+            This book is copyrighted or does not have a free text version.
           </Text>
         </View>
       )}
